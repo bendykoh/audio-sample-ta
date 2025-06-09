@@ -11,6 +11,7 @@ class TranscriptionCreate(TranscriptionBase):
 class TranscriptionResponse(TranscriptionBase):
     id: int
     created_at: datetime
+    original_filename: str = None
 
     class Config:
         from_attributes = True 

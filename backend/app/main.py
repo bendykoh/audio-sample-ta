@@ -3,15 +3,17 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.endpoints import transcription
+from app.api.routes import transcription
 from app.db.database import engine
 from app.models.transcription import Base
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -29,4 +31,6 @@ if settings.all_cors_origins:
         allow_headers=["*"],
     )
 
-app.include_router(transcription.router, prefix=settings.API_V1_STR, tags=["transcription"])
+app.include_router(
+    transcription.router, prefix=settings.API_V1_STR, tags=["transcription"]
+)
