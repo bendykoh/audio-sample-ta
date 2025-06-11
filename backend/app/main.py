@@ -1,11 +1,10 @@
+from app.api.routes import transcription
+from app.core.config import settings
+from app.db.database import engine
+from app.models.transcription import Base
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
-
-from app.core.config import settings
-from app.api.routes import transcription
-from app.db.database import engine
-from app.models.transcription import Base
 
 # Create database tables
 Base.metadata.create_all(bind=engine)

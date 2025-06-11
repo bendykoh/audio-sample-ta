@@ -1,12 +1,16 @@
 from datetime import datetime
+
 from pydantic import BaseModel
+
 
 class TranscriptionBase(BaseModel):
     filename: str
     transcription_content: str
 
+
 class TranscriptionCreate(TranscriptionBase):
     pass
+
 
 class TranscriptionResponse(TranscriptionBase):
     id: int
@@ -14,4 +18,4 @@ class TranscriptionResponse(TranscriptionBase):
     original_filename: str = None
 
     class Config:
-        from_attributes = True 
+        from_attributes = True

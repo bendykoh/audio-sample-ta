@@ -1,14 +1,13 @@
+import os
+
 import pytest
+from app.db.database import get_db
+from app.main import app
+from app.models.transcription import Base
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-import os
-
-from app.main import app
-from app.models.transcription import Base
-from app.db.database import get_db
-from app.models.transcription import Transcription
 
 # Create test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

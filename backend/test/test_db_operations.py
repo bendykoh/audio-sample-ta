@@ -1,11 +1,9 @@
 import pytest
+from app.api.routes.transcription import _get_unique_filename
+from app.models.transcription import Base, Transcription
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from app.models.transcription import Base
-from app.models.transcription import Transcription
-from app.api.routes.transcription import _get_unique_filename
 
 # Create test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -14,7 +12,7 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)  # noqa: E501
 
 
 @pytest.fixture
@@ -30,7 +28,8 @@ def db_session():
 
 def test_create_transcription(db_session):
     transcription = Transcription(
-        filename="test.mp3", transcription_content="This is a test transcription"
+        filename="test.mp3",
+        transcription_content="This is a test transcription",  # noqa: E501
     )
     db_session.add(transcription)
     db_session.commit()
@@ -38,19 +37,20 @@ def test_create_transcription(db_session):
 
     assert transcription.id is not None
     assert transcription.filename == "test.mp3"
-    assert transcription.transcription_content == "This is a test transcription"
+    assert transcription.transcription_content == "This is a test transcription"  # noqa: E501
 
 
 def test_get_transcription(db_session):
     # Create a transcription
     transcription = Transcription(
-        filename="test.mp3", transcription_content="This is a test transcription"
+        filename="test.mp3",
+        transcription_content="This is a test transcription",  # noqa: E501
     )
     db_session.add(transcription)
     db_session.commit()
 
     # Retrieve the transcription
-    result = db_session.query(Transcription).filter_by(filename="test.mp3").first()
+    result = db_session.query(Transcription).filter_by(filename="test.mp3").first()  # noqa: E501
     assert result is not None
     assert result.transcription_content == "This is a test transcription"
 
@@ -58,9 +58,9 @@ def test_get_transcription(db_session):
 def test_search_transcription(db_session):
     # Create multiple transcriptions
     transcriptions = [
-        Transcription(filename="test1.mp3", transcription_content="First test"),
-        Transcription(filename="test2.mp3", transcription_content="Second test"),
-        Transcription(filename="other.mp3", transcription_content="Other content"),
+        Transcription(filename="test1.mp3", transcription_content="First test"),  # noqa: E501
+        Transcription(filename="test2.mp3", transcription_content="Second test"),  # noqa: E501
+        Transcription(filename="other.mp3", transcription_content="Other content"),  # noqa: E501
     ]
     for t in transcriptions:
         db_session.add(t)
@@ -88,7 +88,7 @@ def test_duplicate_filename_handling(db_session):
 
     # Create a transcription with the original filename
     transcription = Transcription(
-        filename=filename, transcription_content="First transcription"
+        filename=filename, transcription_content="First transcription"  # noqa: E501
     )
     db_session.add(transcription)
     db_session.commit()
@@ -99,7 +99,7 @@ def test_duplicate_filename_handling(db_session):
 
     # Create another transcription with the modified filename
     transcription2 = Transcription(
-        filename=result2, transcription_content="Second transcription"
+        filename=result2, transcription_content="Second transcription"  # noqa: E501
     )
     db_session.add(transcription2)
     db_session.commit()
