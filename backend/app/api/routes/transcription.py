@@ -21,7 +21,26 @@ def health_check():
 async def create_transcription(
     audio_file: UploadFile = File(...), db: Session = Depends(get_db)
 ):
+    """
+    Process and transcribe an uploaded audio file, storing the transcription in the database.
+
+    This endpoint handles audio file upload, transcription, and storage. It includes duplicate
+    filename handling by appending incremental numbers to filenames that already exist.
+
+    Args:
+        audio_file (UploadFile): The audio file to be transcribed. Must be an audio file format.
+        db (Session): SQLAlchemy database session dependency injection.
+
+    Returns:
+        TranscriptionResponse: transcription object with all fields
+
+    Raises:
+        HTTPException:
+            - 400: If the uploaded file is not an audio file
+            - 500: If transcription fails or other server-side errors occur
+    """  # noqa: E501
     # Check if file is an audio file
+    # Frontend has already rejected all files except mp3 so this is just a sanity check
     if not audio_file.content_type.startswith("audio/"):
         raise HTTPException(status_code=400, detail="File must be an audio file")  # noqa: E501
 
@@ -65,12 +84,41 @@ async def create_transcription(
 
 @router.get("/transcriptions", response_model=List[TranscriptionResponse])
 def get_transcriptions(db: Session = Depends(get_db)):
+    """
+    Retrieve all transcriptions from the database.
+
+    This endpoint returns a list of all transcription records, including their IDs,
+    filenames, transcribed content, and creation timestamps.
+
+    Args:
+        db (Session): SQLAlchemy database session dependency injection.
+
+    Returns:
+        List[TranscriptionResponse]: A list of transcription objects
+    """  # noqa: E501
     transcriptions = db.query(Transcription).all()
     return transcriptions
 
 
 @router.get("/search")
 def search_transcriptions(query: str, db: Session = Depends(get_db)):
+    """
+    Search for transcriptions by filename using a case-insensitive partial match.
+
+    This endpoint performs a fuzzy search on transcription filenames, returning all records
+    where the filename contains the search query string (case-insensitive).
+
+    Args:
+        query (str): The search string to match against filenames
+        db (Session): SQLAlchemy database session dependency injection.
+
+    Returns:
+        List[Transcription]: A list of matching transcription objects
+
+    Example:
+        A search query of "audio" will match filenames like "my_audio_1.mp3",
+        "AUDIO_file_2.mp3", etc.
+    """  # noqa: E501
     transcriptions = (
         db.query(Transcription).filter(Transcription.filename.ilike(f"%{query}%")).all()  # noqa: E501
     )

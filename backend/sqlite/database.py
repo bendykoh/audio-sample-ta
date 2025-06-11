@@ -3,6 +3,13 @@ import sqlite3
 from pathlib import Path
 from typing import List, Optional
 
+"""Writer notes: 
+This database creation is not used within the repo itself, but it is used to reset the database to the original state
+This file should be run from `backend` directory using `python sqlite/database.py`.
+The reason this was created is because initially I had issues trying to run whisper model with WSL2, it only worked better
+when I used conda environment with pip to install torch and transformer package
+"""
+
 
 class AudioDatabaseHandler:
     def __init__(self, db_path: str = "transcription.db"):
