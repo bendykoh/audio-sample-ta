@@ -42,7 +42,7 @@ async def create_transcription(
         if text is None:
             raise HTTPException(status_code=500, detail="Failed to transcribe audio")
 
-         # Handle duplicate filename
+        # Handle duplicate filename
         original_filename = audio_file.filename
         final_filename = _get_unique_filename(db, original_filename)
 
@@ -60,7 +60,7 @@ async def create_transcription(
             transcription_content=db_transcription.transcription_content,
             original_filename=original_filename,
             created_at=db_transcription.created_at,
-        )   
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -86,24 +86,30 @@ def _get_unique_filename(db: Session, filename: str) -> str:
     """
     if not filename:
         return filename
-    
+
     # Check if the original filename exists
-    existing = db.query(Transcription).filter(Transcription.filename == filename).first()
+    existing = (
+        db.query(Transcription).filter(Transcription.filename == filename).first()
+    )
     if not existing:
         return filename
-    
+
     # Split filename and extension
-    if '.' in filename:
-        name, ext = filename.rsplit('.', 1)
-        ext = '.' + ext
+    if "." in filename:
+        name, ext = filename.rsplit(".", 1)
+        ext = "." + ext
     else:
-        name, ext = filename, ''
-    
+        name, ext = filename, ""
+
     # Find the highest number suffix
     counter = 1
     while True:
         new_filename = f"{name}_{counter}{ext}"
-        existing = db.query(Transcription).filter(Transcription.filename == new_filename).first()
+        existing = (
+            db.query(Transcription)
+            .filter(Transcription.filename == new_filename)
+            .first()
+        )
         if not existing:
             return new_filename
         counter += 1
