@@ -1,16 +1,13 @@
-from typing import List
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
-from sqlalchemy import select, text
-from sqlalchemy.orm import Session
-from pydub import AudioSegment
 import io
-import soundfile as sf
-import numpy as np
+import os
+from typing import List
 
 from app.db.database import get_db
 from app.models.transcription import Transcription
 from app.schemas.transcription import TranscriptionResponse
 from audio_processor.transcriber import AudioTranscriber
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -26,7 +23,7 @@ async def create_transcription(
 ):
     # Check if file is an audio file
     if not audio_file.content_type.startswith("audio/"):
-        raise HTTPException(status_code=400, detail="File must be an audio file")
+        raise HTTPException(status_code=400, detail="File must be an audio file")  # noqa: E501
 
     try:
         # Initialize the transcriber
@@ -40,7 +37,7 @@ async def create_transcription(
         text = transcriber.process_audio_object(audio_wav)
 
         if text is None:
-            raise HTTPException(status_code=500, detail="Failed to transcribe audio")
+            raise HTTPException(status_code=500, detail="Failed to transcribe audio")  # noqa: E501
 
         # Handle duplicate filename
         original_filename = audio_file.filename
@@ -75,7 +72,7 @@ def get_transcriptions(db: Session = Depends(get_db)):
 @router.get("/search")
 def search_transcriptions(query: str, db: Session = Depends(get_db)):
     transcriptions = (
-        db.query(Transcription).filter(Transcription.filename.ilike(f"%{query}%")).all()
+        db.query(Transcription).filter(Transcription.filename.ilike(f"%{query}%")).all()  # noqa: E501
     )
     return transcriptions
 
@@ -83,33 +80,30 @@ def search_transcriptions(query: str, db: Session = Depends(get_db)):
 def _get_unique_filename(db: Session, filename: str) -> str:
     """
     Helper function to generate a unique filename by appending _1, _2, etc. if the filename already exists
-    """
-    if not filename:
-        return filename
+    """  # noqa: E501
+    # Split the filename into base name and extension
+    # For example: "audio.mp3" -> ("audio", ".mp3")
+    name, ext = os.path.splitext(filename)
 
-    # Check if the original filename exists
-    existing = (
-        db.query(Transcription).filter(Transcription.filename == filename).first()
+    # Get all filenames that start with the base name
+    base_pattern = f"{name}_%{ext}"
+    existing_files = (
+        db.query(Transcription.filename)
+        .filter(Transcription.filename.like(base_pattern))
+        .all()
     )
-    if not existing:
-        return filename
 
-    # Split filename and extension
-    if "." in filename:
-        name, ext = filename.rsplit(".", 1)
-        ext = "." + ext
-    else:
-        name, ext = filename, ""
+    if not existing_files:
+        return f"{name}_1{ext}"
 
-    # Find the highest number suffix
-    counter = 1
-    while True:
-        new_filename = f"{name}_{counter}{ext}"
-        existing = (
-            db.query(Transcription)
-            .filter(Transcription.filename == new_filename)
-            .first()
-        )
-        if not existing:
-            return new_filename
-        counter += 1
+    # Extract numbers from filenames and find max
+    max_counter = 0
+    for (filename,) in existing_files:
+        try:
+            # Extract number between last underscore and extension
+            number = int(filename.rsplit("_", 1)[1].replace(ext, ""))
+            max_counter = max(max_counter, number)
+        except (ValueError, IndexError):
+            continue
+
+    return f"{name}_{max_counter + 1}{ext}"
