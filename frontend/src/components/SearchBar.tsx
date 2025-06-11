@@ -13,7 +13,7 @@ const SearchBar: React.FC<Props> = ({ onSearch }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} data-testid="search-form">
       <div className="flex items-center gap-8">
         <input
           type="text"

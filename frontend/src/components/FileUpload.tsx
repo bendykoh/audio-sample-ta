@@ -114,6 +114,7 @@ const FileUpload: React.FC = () => {
           onChange={handleFileChange}
           className="border p-2 rounded"
           disabled={uploading}
+          aria-label="Upload audio files"
         />
         <button
           onClick={handleUpload}

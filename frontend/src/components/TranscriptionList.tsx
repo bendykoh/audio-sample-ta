@@ -30,15 +30,17 @@ const TranscriptionList: React.FC<Props> = ({ searchQuery }) => {
         const url = `${url_params.api.endpoints.search}?query=${encodeURIComponent(searchQuery)}`;
         const { data } = await api.get(url);
         setTranscriptions(data);
+        setHasSearched(true);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch transcriptions');
+        setTranscriptions([]);
+        setHasSearched(true);
       } finally {
         setLoading(false);
-        setHasSearched(true);
       }
     };
 
-   // Only trigger search when searchQuery is not empty
+    // Only trigger search when searchQuery is not empty
     if (searchQuery && searchQuery.trim() !== '') {
       fetchTranscriptions();
     } else if (searchQuery === '' && hasSearched) {
@@ -54,6 +56,7 @@ const TranscriptionList: React.FC<Props> = ({ searchQuery }) => {
       setLoading(false);
     }
   }, [searchQuery, hasSearched]);
+
   if (!hasSearched && !error) return null;
 
   if (loading) {
